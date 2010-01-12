@@ -11,10 +11,10 @@ import android.widget.SimpleAdapter;
 
 public class FileDataProvider {
 
-	private final static String ICON = "ICON";
-	private final static String LABEL = "LABEL";
-	private final static String PATH = "PATH";
-	private final static String FILE = "FILE";
+	private final static String MAP_KEY_ICON = "MAP_KEY_ICON";
+	private final static String MAP_KEY_FILE_NAME = "MAP_KEY_FILE_NAME";
+	private final static String MAP_ABSOLUTE_PATH = "MAP_ABSOLUTE_PATH";
+	private final static String MAP_KEY_FILE = "MAP_KEY_FILE";
 	
 	private File currentDirectory; 
 	private Comparator<File> comparator;
@@ -31,7 +31,7 @@ public class FileDataProvider {
 		comparator = new FileComparator();
 		list = new ArrayList<HashMap<String, Object>>();
 		adapter = new SimpleAdapter(context, list, R.layout.row, new String[] {
-				ICON, LABEL, PATH }, new int[] { R.id.imageIcon, R.id.textLabel, R.id.textFile });
+				MAP_KEY_ICON, MAP_KEY_FILE_NAME, MAP_ABSOLUTE_PATH }, new int[] { R.id.imageIcon, R.id.textLabel, R.id.textFile });
 
 	}
 	public void root(){
@@ -43,7 +43,7 @@ public class FileDataProvider {
 		}
 	}
 	public void navigateTo(int position){
-		navigateTo((File)list.get(position).get(FILE));
+		navigateTo((File)list.get(position).get(MAP_KEY_FILE));
 	}
 	private void navigateTo(File f){
 		if(!f.isDirectory()){
@@ -59,17 +59,28 @@ public class FileDataProvider {
 		for(int it = 0; it < length; it++){
 			HashMap<String, Object> map = new HashMap<String, Object>();
 			File fTemp = files[it];
+			map.put(MAP_KEY_ICON, getIconForFile(fTemp));
 			if(fTemp.isDirectory()){
-				map.put(ICON, folder);
+				map.put(MAP_KEY_ICON, folder);
 			} else {
-				map.put(ICON, text);
+				map.put(MAP_KEY_ICON, text);
 			}
-			map.put(LABEL, fTemp.getName());
-			map.put(PATH, fTemp.getAbsolutePath());
-			map.put(FILE, fTemp);
+			map.put(MAP_KEY_FILE_NAME, fTemp.getName());
+			map.put(MAP_ABSOLUTE_PATH, fTemp.getAbsolutePath());
+			map.put(MAP_KEY_FILE, fTemp);
 			list.add(map);
 		}
 		adapter.notifyDataSetChanged();
+	}
+	public int getIconForFile(File f){
+		int ret = -1;
+		if(f.isDirectory()){
+			ret = R.drawable.folder;
+		} else {
+			 ret = R.drawable.text;
+			 
+		}
+		return ret;
 	}
 	public SimpleAdapter getAdapter() {
 		return adapter;

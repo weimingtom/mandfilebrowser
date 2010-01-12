@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string-array name="audio"><item>mp3</item>
+<item>wav</item>
+<item>ogg</item>
+</string-array>
+</resources>

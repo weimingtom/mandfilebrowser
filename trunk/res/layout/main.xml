@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<TableLayout android:layout_width="fill_parent"
+	android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android"
+	android:gravity="fill_vertical|fill_horizontal|fill" android:id="@+id/TableLayoutGeneral">
+	<DigitalClock android:text="@+id/DigitalClock01"
+		android:layout_height="wrap_content" android:textColor="@color/RED"
+		android:textStyle="bold" android:typeface="sans" android:textSize="20px"
+		android:layout_width="fill_parent" android:layout_gravity="center"
+		android:id="@+id/DigitalClock"></DigitalClock>
+	<com.marcnuri.MAndFileBrowser.FileListView
+		android:layout_height="fill_parent" android:layout_gravity="top|fill_vertical|fill_horizontal|center|fill"
+		android:layout_width="fill_parent" android:id="@+id/fileListView"></com.marcnuri.MAndFileBrowser.FileListView>
+
+
+
+
+
+
+</TableLayout>

@@ -10,6 +10,7 @@ package com.marcnuri.MAndFileBrowser;
 public final class R {
     public static final class array {
         public static final int audio=0x7f040000;
+        public static final int image=0x7f040001;
     }
     public static final class attr {
     }
@@ -22,18 +23,17 @@ public final class R {
         public static final int button_cancel=0x7f020002;
         public static final int button_ok=0x7f020003;
         public static final int edittrash=0x7f020004;
-        public static final int folder=0x7f020005;
-        public static final int folder_home=0x7f020006;
-        public static final int forward=0x7f020007;
-        public static final int goroot=0x7f020008;
-        public static final int html=0x7f020009;
-        public static final int icon=0x7f02000a;
-        public static final int image=0x7f02000b;
-        public static final int pdf=0x7f02000c;
-        public static final int sound=0x7f02000d;
-        public static final int text=0x7f02000e;
-        public static final int txt=0x7f02000f;
-        public static final int up=0x7f020010;
+        public static final int folder_home=0x7f020005;
+        public static final int forward=0x7f020006;
+        public static final int goroot=0x7f020007;
+        public static final int html=0x7f020008;
+        public static final int icon=0x7f020009;
+        public static final int iconaudio=0x7f02000a;
+        public static final int iconfolder=0x7f02000b;
+        public static final int iconimage=0x7f02000c;
+        public static final int icontext=0x7f02000d;
+        public static final int iconup=0x7f02000e;
+        public static final int pdf=0x7f02000f;
     }
     public static final class id {
         public static final int DigitalClock=0x7f070002;

@@ -27,6 +27,7 @@ public class MAndFileBrowser extends Activity {
     }
     private void initComponents(){
     	provider = new FileDataProvider((Context)this);
+    	
     	((FileListView)findViewById(R.id.fileListView)).setAdapter(provider.getAdapter());
     	((FileListView)findViewById(R.id.fileListView)).setOnItemClickListener(
     			new OnItemClickListener() {

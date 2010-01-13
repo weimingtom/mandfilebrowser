@@ -15,7 +15,7 @@ public class FileDataProvider {
 	private final static String MAP_KEY_ICON = "MAP_KEY_ICON";
 	private final static String MAP_KEY_FILE_NAME = "MAP_KEY_FILE_NAME";
 	private final static String MAP_KEY_FILE_SIZE = "MAP_KEY_FILE_SIZE";
-	private final static String MAP_ABSOLUTE_PATH = "MAP_ABSOLUTE_PATH";
+	private final static String MAP_KEY_ABSOLUTE_PATH = "MAP_KEY_ABSOLUTE_PATH";
 	private final static String MAP_KEY_FILE = "MAP_KEY_FILE";
 	
 	private Context context;
@@ -23,6 +23,8 @@ public class FileDataProvider {
 	private Comparator<File> comparator;
 	private ArrayList<HashMap<String, Object>> list;
 	private SimpleAdapter adapter;
+	
+	private HashMap<String, Integer> mimeTypes;
 	
 	/**
 	 * @author Marc Nuri San Félix
@@ -34,9 +36,22 @@ public class FileDataProvider {
 		comparator = new FileComparator();
 		list = new ArrayList<HashMap<String, Object>>();
 		adapter = new SimpleAdapter(context, list, R.layout.row, new String[] {
-				MAP_KEY_ICON, MAP_KEY_FILE_NAME, MAP_ABSOLUTE_PATH }, new int[] { R.id.imageIcon, R.id.textLabel, R.id.textFile });
-
+				MAP_KEY_ICON, MAP_KEY_FILE_NAME, MAP_KEY_ABSOLUTE_PATH }, new int[] { R.id.imageIcon, R.id.textLabel, R.id.textFile });
+		//PERFORMANCE GAIN WHEN RETREIVING ICONS
+		initMimeTypes();
 	}
+	
+	private void initMimeTypes(){
+		mimeTypes = new HashMap<String, Integer>();
+		Resources resources = context.getResources();
+		for(String extension : resources.getStringArray(R.array.audio)){
+			mimeTypes.put(extension, R.drawable.iconaudio);
+		}
+		for(String extension : resources.getStringArray(R.array.image)){
+			mimeTypes.put(extension, R.drawable.iconimage);
+		}
+	}
+	
 	public void root(){
 		navigateTo(new File("/"));
 	}
@@ -78,11 +93,11 @@ public class FileDataProvider {
 			if(file != null){
 			map.put(MAP_KEY_FILE_NAME, file.getName());
 			map.put(MAP_KEY_FILE_SIZE, file.length());
-			map.put(MAP_ABSOLUTE_PATH, file.getAbsolutePath());
+			map.put(MAP_KEY_ABSOLUTE_PATH, file.getAbsolutePath());
 		} else {
 			map.put(MAP_KEY_FILE_NAME, "..");
 			map.put(MAP_KEY_FILE_SIZE, 0);
-			map.put(MAP_ABSOLUTE_PATH, "");
+			map.put(MAP_KEY_ABSOLUTE_PATH, "");
 		}
 		return map;		
 	}
@@ -94,22 +109,15 @@ public class FileDataProvider {
 			ret = R.drawable.iconfolder;
 		} else {
 			 ret = R.drawable.icontext;
-			 String fileName = f.getName();
-			 Resources resources = context.getResources();
-			 if(isExtensionInArray(fileName, resources.getStringArray(R.array.audio))){
-				 ret = R.drawable.iconaudio;
-			 } else if(isExtensionInArray(fileName, resources.getStringArray(R.array.image))){
-				 ret = R.drawable.iconimage;
-			 } 
-		}
-		return ret;
-	}
-	private boolean isExtensionInArray(String fileName, String[] array){
-		boolean ret = false;
-		for(String extension : array){
-			if(fileName.endsWith("."+extension)){
-				ret = true;
-			}
+			 
+			 String[] fileName = f.getName().split("\\.");
+			 int arrayLength = fileName.length;
+			 if(arrayLength > 1){
+				 Integer value = mimeTypes.get(fileName[arrayLength-1]);
+				 if(value != null){
+					 ret = value.intValue();
+				 }
+			 }
 		}
 		return ret;
 	}

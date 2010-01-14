@@ -19,7 +19,4 @@ public class FileListView extends ListView {
 		super(context, attrs, defStyle);
 	}
 
-
-
-
 }

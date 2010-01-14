@@ -3,7 +3,8 @@
     
     <string name="app_name">MAndFileBrowser</string>
 
-<string name="exit">Exit</string>
+<string name="app_version">0.01</string><string name="exit">Exit</string>
 <string name="menu">Menu</string>
-<color name="RED">#FF0000</color>
+
+
 </resources>

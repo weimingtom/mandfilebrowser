@@ -9,16 +9,23 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class FileDataProvider {
+public class OldFileDataProvider {
 
+	private final static String MAP_KEY_ICON = "MAP_KEY_ICON";
+	private final static String MAP_KEY_SELECTED = "MAP_KEY_SELECTED";
+	private final static String MAP_KEY_FILE_NAME = "MAP_KEY_FILE_NAME";
+	private final static String MAP_KEY_FILE_SIZE = "MAP_KEY_FILE_SIZE";
+	private final static String MAP_KEY_FILE = "MAP_KEY_FILE";
 	
 	private Activity context;
-	private File currentDirectory;
+	private File currentDirectory; 
+	private List<File> selectedFiles;
 	private Comparator<File> comparator;
-	private ArrayList<FileListAdapterEntry> list;
-	private FileListAdapter listAdapter;
+	private ArrayList<HashMap<String, Object>> list;
+	private SimpleAdapter listAdapter;
 	
 	private HashMap<String, Integer> mimeTypes;
 	
@@ -26,12 +33,16 @@ public class FileDataProvider {
 	 * @author Marc Nuri San Félix
 	 *
 	 */
-	public FileDataProvider(Activity context) {
+	public OldFileDataProvider(Activity context) {
 		this.context = context;
 		currentDirectory = new File("/");
+		selectedFiles = new ArrayList<File>();
 		comparator = new FileComparator();
-		list = new ArrayList<FileListAdapterEntry>();
-		listAdapter = new FileListAdapter(context, R.layout.row,list);
+		list = new ArrayList<HashMap<String, Object>>();
+
+		listAdapter = new SimpleAdapter(context, list, R.layout.row, new String[] {
+				MAP_KEY_ICON, MAP_KEY_FILE_NAME, MAP_KEY_FILE_SIZE },
+				new int[] { R.id.imageIcon, R.id.textFileName, R.id.textFileSize });
 
 		//PERFORMANCE GAIN WHEN RETREIVING ICONS
 		initMimeTypes();
@@ -58,11 +69,12 @@ public class FileDataProvider {
 		}
 	}
 	public void selectFile(int position){
-		listAdapter.getItem(position).selected = true;
+		selectedFiles.add((File)list.get(position).get(MAP_KEY_FILE));
+		list.get(position).put(MAP_KEY_SELECTED, true);
 		listAdapter.notifyDataSetChanged();
 	}
 	public void navigateTo(int position){
-		navigateTo(listAdapter.getItem(position).file);
+		navigateTo((File)list.get(position).get(MAP_KEY_FILE));
 	}
 	private void navigateTo(File f){
 		if(f == null){
@@ -74,6 +86,7 @@ public class FileDataProvider {
 		} else {
 			list.clear();
 			currentDirectory = f;
+			selectedFiles.clear();
 			String path = currentDirectory.getAbsolutePath();
 			if(path.length()>1){
 				path = path+"/";
@@ -81,21 +94,30 @@ public class FileDataProvider {
 			((TextView)context.findViewById(R.id.textPath)).setText(path);
 			//Put up icon
 			if(!f.getAbsolutePath().equals("/")){
-				list.add(getFileListAdapterEntryForFile(null));
+				list.add(getHashMapForFile(null));
 			}
 			File[] files = f.listFiles();
 			Arrays.sort(files, comparator);
 			int length = files.length;
 			for(int it = 0; it < length; it++){
-				list.add(getFileListAdapterEntryForFile(files[it]));
+				list.add(getHashMapForFile(files[it]));
 			}
 			listAdapter.notifyDataSetChanged();
 		}
 	}
-	private FileListAdapterEntry getFileListAdapterEntryForFile(File file){
-		FileListAdapterEntry ret =
-			new FileListAdapterEntry(file, false, getIconForFile(file));
-		return ret;		
+	private HashMap<String, Object> getHashMapForFile(File file){
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put(MAP_KEY_FILE, file);
+		map.put(MAP_KEY_ICON, getIconForFile(file));
+		map.put(MAP_KEY_SELECTED, false);
+			if(file != null){
+			map.put(MAP_KEY_FILE_NAME, file.getName());
+			map.put(MAP_KEY_FILE_SIZE, file.length());
+		} else {
+			map.put(MAP_KEY_FILE_NAME, "..");
+			map.put(MAP_KEY_FILE_SIZE, 0);
+		}
+		return map;		
 	}
 	private int getIconForFile(File f){
 		int ret = -1;
@@ -116,7 +138,7 @@ public class FileDataProvider {
 		}
 		return ret;
 	}
-	public FileListAdapter getAdapter() {
+	public SimpleAdapter getAdapter() {
 		return listAdapter;
 	}
 }

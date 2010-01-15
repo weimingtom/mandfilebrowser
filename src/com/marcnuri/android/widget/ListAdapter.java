@@ -7,7 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-
+/**
+ * @author Marc Nuri San Félix
+ * 
+ */
 public abstract class ListAdapter<T, V extends ViewHolder<T>> extends
 		BaseAdapter {
 	protected Context context;

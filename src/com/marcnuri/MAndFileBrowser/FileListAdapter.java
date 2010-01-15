@@ -13,7 +13,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.marcnuri.android.widget.ListAdapter;
-
+/**
+ * @author Marc Nuri San Félix
+ * 
+ */
 public class FileListAdapter extends
 		ListAdapter<FileListAdapterEntry, FileListAdapterViewHolder> {
 

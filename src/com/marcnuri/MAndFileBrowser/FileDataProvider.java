@@ -8,7 +8,10 @@ import java.util.Comparator;
 
 import android.app.Activity;
 import android.widget.TextView;
-
+/**
+ * @author Marc Nuri San Félix
+ * 
+ */
 public class FileDataProvider {
 
 	private Activity context;

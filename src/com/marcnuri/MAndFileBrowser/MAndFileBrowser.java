@@ -2,11 +2,9 @@ package com.marcnuri.MAndFileBrowser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Currency;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Notification;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;

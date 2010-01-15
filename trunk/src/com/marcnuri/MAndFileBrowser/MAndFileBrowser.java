@@ -26,6 +26,9 @@ public class MAndFileBrowser extends Activity {
 	private final static int MENU_ITEM_EXIT = 1;
 	private final static int MENU_ITEM_CREATE_DIRECTORY = 2;
 	private final static int MENU_ITEM_RENAME_FILE = 3;
+	private final static int MENU_ITEM_COPY = 4;
+	private final static int MENU_ITEM_PASTE = 5;
+	private final static int MENU_ITEM_DELETE = 6;
 	private FileDataProvider provider;
 
 	/** Called when the activity is first created. */
@@ -64,25 +67,42 @@ public class MAndFileBrowser extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		int NONE = Menu.NONE;
-		System.out.println("CREATING OPTIONS MENU");
 		menu.add(NONE, MENU_ITEM_CREATE_DIRECTORY, NONE,
 				R.string.create_directory);
 		menu.add(NONE, MENU_ITEM_RENAME_FILE, NONE, R.string.rename_file);
+		menu.add(NONE, MENU_ITEM_COPY, NONE, R.string.copy);
+		menu.add(NONE, MENU_ITEM_PASTE, NONE, R.string.paste);
+		menu.add(NONE, MENU_ITEM_DELETE, NONE, R.string.delete);
 		menu.add(NONE, MENU_ITEM_EXIT, NONE, R.string.exit);
 		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onMenuOpened(int featureId, Menu menu) {
-		if (provider.canWrite()) {
-			menu.findItem(MENU_ITEM_CREATE_DIRECTORY).setEnabled(true);
+		if (provider.canWrite) {
+			menu.findItem(MENU_ITEM_CREATE_DIRECTORY).setVisible(true);
 		} else {
-			menu.findItem(MENU_ITEM_CREATE_DIRECTORY).setEnabled(false);
+			menu.findItem(MENU_ITEM_CREATE_DIRECTORY).setVisible(false);
 		}
-		if (provider.canRename()) {
-			menu.findItem(MENU_ITEM_RENAME_FILE).setEnabled(true);
+		if (provider.canRename) {
+			menu.findItem(MENU_ITEM_RENAME_FILE).setVisible(true);
 		} else {
-			menu.findItem(MENU_ITEM_RENAME_FILE).setEnabled(false);
+			menu.findItem(MENU_ITEM_RENAME_FILE).setVisible(false);
+		}
+		if(provider.selectedFiles>0){
+			menu.findItem(MENU_ITEM_COPY).setVisible(true);
+		} else {
+			menu.findItem(MENU_ITEM_COPY).setVisible(false);
+		}
+		if (provider.canPaste) {
+			menu.findItem(MENU_ITEM_PASTE).setVisible(true);
+		} else {
+			menu.findItem(MENU_ITEM_PASTE).setVisible(false);
+		}
+		if (provider.canDelete) {
+			menu.findItem(MENU_ITEM_DELETE).setVisible(true);
+		} else {
+			menu.findItem(MENU_ITEM_DELETE).setVisible(false);
 		}
 		return super.onMenuOpened(featureId, menu);
 	}
@@ -99,6 +119,15 @@ public class MAndFileBrowser extends Activity {
 		case MENU_ITEM_RENAME_FILE:
 			renameFile();
 			return true;
+		case MENU_ITEM_COPY:
+			copy();
+			return true;
+		case MENU_ITEM_PASTE:
+			paste();
+			return true;
+		case MENU_ITEM_DELETE:
+			delete();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -112,12 +141,32 @@ public class MAndFileBrowser extends Activity {
 		return super.onKeyDown(keyCode, event);
 	}
 
+	private void delete(){
+		provider.delete();
+		provider.refresh();
+	}
+	private void copy(){
+		provider.copy();
+	}
+
+	private void paste(){
+		try {
+			provider.paste();
+			provider.refresh();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast toast = Toast.makeText(MAndFileBrowser.this, "Error when pasting"
+					, Toast.LENGTH_SHORT);
+			toast.show();
+		}
+	}
+	
 	private void renameFile() {
 		final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 		dialog.setTitle("Rename");
 		dialog.setMessage("New name");
 		final EditText input = new EditText(this);
-		File toRename = provider.getToRenameFile();
+		File toRename = provider.selectedFile;
 		if(toRename != null){
 			input.setText(toRename.getName());
 		}

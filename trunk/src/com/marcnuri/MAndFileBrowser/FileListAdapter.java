@@ -59,16 +59,6 @@ public class FileListAdapter extends
 		} else {
 
 			TypedValue tv = new TypedValue();
-			System.out.println("color"
-					+ theme.resolveAttribute(android.R.attr.color, tv, true));
-			System.out.println("colorForeground"
-					+ theme.resolveAttribute(android.R.attr.colorForeground,
-							tv, true));
-			System.out.println("textColor"
-					+ theme
-							.resolveAttribute(android.R.attr.textColor, tv,
-									true));
-
 			tv = new TypedValue();
 			if (theme.resolveAttribute(android.R.attr.textColorPrimary, tv,
 					true)) {

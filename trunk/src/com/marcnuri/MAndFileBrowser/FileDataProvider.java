@@ -1,6 +1,7 @@
 package com.marcnuri.MAndFileBrowser;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -10,7 +11,6 @@ import android.widget.TextView;
 
 public class FileDataProvider {
 
-	
 	private Activity context;
 	private File currentDirectory;
 	private Comparator<File> comparator;
@@ -39,6 +39,12 @@ public class FileDataProvider {
 			navigateTo(currentDirectory.getParentFile());
 		}
 	}
+	public void refresh(){
+		navigateTo(currentDirectory);
+	}
+	public boolean canWrite(){
+		return currentDirectory.canWrite();
+	}
 	public void selectFile(int position){
 		FileListAdapterEntry entry = listAdapter.getItem(position);
 		if(entry.file != null){
@@ -47,6 +53,19 @@ public class FileDataProvider {
 			listAdapter.notifyDataSetChanged();
 		}
 	}
+	public void createDirectory(String directoryName){
+		System.out.println(currentDirectory.getAbsolutePath()+"/"+directoryName);
+		File newFile = new File(currentDirectory.getAbsolutePath()+"/"+directoryName);
+		try {
+			newFile.mkdir();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("SECURITY");
+		}
+	}
+
+	
 	public void navigateTo(int position){
 		navigateTo(listAdapter.getItem(position).file);
 	}

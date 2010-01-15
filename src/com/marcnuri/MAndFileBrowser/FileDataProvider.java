@@ -4,11 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.widget.TextView;
 
 public class FileDataProvider {
@@ -20,8 +17,6 @@ public class FileDataProvider {
 	private ArrayList<FileListAdapterEntry> list;
 	private FileListAdapter listAdapter;
 	
-	private HashMap<String, Integer> mimeTypes;
-	
 	/**
 	 * @author Marc Nuri San Félix
 	 *
@@ -31,23 +26,10 @@ public class FileDataProvider {
 		currentDirectory = new File("/");
 		comparator = new FileComparator();
 		list = new ArrayList<FileListAdapterEntry>();
-		listAdapter = new FileListAdapter(context, R.layout.row,list);
-
-		//PERFORMANCE GAIN WHEN RETREIVING ICONS
-		initMimeTypes();
-		
+		listAdapter = new FileListAdapter(context, R.layout.row,list);		
 	}
 	
-	private void initMimeTypes(){
-		mimeTypes = new HashMap<String, Integer>();
-		Resources resources = context.getResources();
-		for(String extension : resources.getStringArray(R.array.audio)){
-			mimeTypes.put(extension, R.drawable.iconaudio);
-		}
-		for(String extension : resources.getStringArray(R.array.image)){
-			mimeTypes.put(extension, R.drawable.iconimage);
-		}
-	}
+
 	
 	public void root(){
 		navigateTo(new File("/"));
@@ -58,8 +40,12 @@ public class FileDataProvider {
 		}
 	}
 	public void selectFile(int position){
-		listAdapter.getItem(position).selected = true;
-		listAdapter.notifyDataSetChanged();
+		FileListAdapterEntry entry = listAdapter.getItem(position);
+		if(entry.file != null){
+			entry.iconResource = null;
+			entry.selected = !entry.selected;
+			listAdapter.notifyDataSetChanged();
+		}
 	}
 	public void navigateTo(int position){
 		navigateTo(listAdapter.getItem(position).file);
@@ -94,27 +80,8 @@ public class FileDataProvider {
 	}
 	private FileListAdapterEntry getFileListAdapterEntryForFile(File file){
 		FileListAdapterEntry ret =
-			new FileListAdapterEntry(file, false, getIconForFile(file));
+			new FileListAdapterEntry(file, false, null);
 		return ret;		
-	}
-	private int getIconForFile(File f){
-		int ret = -1;
-		if(f ==null){
-			ret = R.drawable.iconup;
-		} else if(f.isDirectory()){
-			ret = R.drawable.iconfolder;
-		} else {
-			 ret = R.drawable.icontext;
-			 String[] fileName = f.getName().split("\\.");
-			 int arrayLength = fileName.length;
-			 if(arrayLength > 1){
-				 Integer value = mimeTypes.get(fileName[arrayLength-1]);
-				 if(value != null){
-					 ret = value.intValue();
-				 }
-			 }
-		}
-		return ret;
 	}
 	public FileListAdapter getAdapter() {
 		return listAdapter;

@@ -3,10 +3,10 @@ package com.marcnuri.MAndFileBrowser;
 import java.io.File;
 
 public class FileListAdapterEntry extends Object{
-	public int iconResource;
+	public Integer iconResource;
 	public File file;
 	public boolean selected;
-	public FileListAdapterEntry(File file, boolean selected, int iconResource){
+	public FileListAdapterEntry(File file, boolean selected, Integer iconResource){
 		this.file = file;
 		this.selected = selected;
 		this.iconResource = iconResource;

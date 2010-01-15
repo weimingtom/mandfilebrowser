@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 
 public abstract class ListAdapter<T, V extends ViewHolder<T>> extends
 		BaseAdapter {
-
+	protected Context context;
 	private ArrayList<T> listItems = new ArrayList<T>();
 	private LayoutInflater layoutInflater;
 	private int mViewId;
@@ -19,6 +19,7 @@ public abstract class ListAdapter<T, V extends ViewHolder<T>> extends
 		layoutInflater = LayoutInflater.from(context);
 		mViewId = viewid;
 		this.listItems = listItems;
+		this.context = context;
 	}
 
 	public int getCount() {

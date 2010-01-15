@@ -9,4 +9,7 @@
 
 <string name="create_directory">New Folder</string>
 <string name="rename_file">Rename</string>
+<string name="copy">Copy</string>
+<string name="paste">Paste</string>
+<string name="delete">Delete</string>
 </resources>

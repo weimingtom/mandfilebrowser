@@ -1,6 +1,8 @@
 package com.marcnuri.android.widget;
 
 /**
+ * @author Marc Nuri San Félix
+ * 
  *  Class to hold static references to data + view 
  *  Implementations must include Other fields such as TextView, ImageView...
  *  */

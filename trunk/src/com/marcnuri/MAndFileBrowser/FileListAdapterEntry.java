@@ -1,7 +1,10 @@
 package com.marcnuri.MAndFileBrowser;
 
 import java.io.File;
-
+/**
+ * @author Marc Nuri San Félix
+ * 
+ */
 public class FileListAdapterEntry extends Object{
 	public Integer iconResource;
 	public File file;

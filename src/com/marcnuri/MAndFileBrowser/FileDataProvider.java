@@ -2,6 +2,7 @@ package com.marcnuri.MAndFileBrowser;
 
 import java.io.File;
 import java.io.FilePermission;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -53,8 +54,10 @@ public class FileDataProvider {
 			listAdapter.notifyDataSetChanged();
 		}
 	}
-	public void createDirectory(String directoryName){
-		System.out.println(currentDirectory.getAbsolutePath()+"/"+directoryName);
+	public void createDirectory(String directoryName) throws IOException{
+		if(!canWrite()){
+			throw new IOException("Permission denied!");
+		}
 		File newFile = new File(currentDirectory.getAbsolutePath()+"/"+directoryName);
 		try {
 			newFile.mkdir();

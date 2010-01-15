@@ -22,6 +22,7 @@ public class MAndFileBrowser extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setTheme(android.R.style.Theme_Dialog);
 		setContentView(R.layout.main);
 		initComponents();
 	}
@@ -43,7 +44,8 @@ public class MAndFileBrowser extends Activity {
 
 				public boolean onItemLongClick(AdapterView<?> adapterView, View view,
 						int position, long id) {
-					return false;
+					provider.selectFile(position);
+					return true;
 				}
 			});
 		provider.root();

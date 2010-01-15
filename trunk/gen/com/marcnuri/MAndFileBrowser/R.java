@@ -57,5 +57,6 @@ public final class R {
         public static final int create_directory=0x7f050004;
         public static final int exit=0x7f050002;
         public static final int menu=0x7f050003;
+        public static final int rename_file=0x7f050005;
     }
 }

@@ -1,5 +1,6 @@
 package com.marcnuri.MAndFileBrowser;
 
+import java.io.IOException;
 import java.util.Currency;
 
 import android.app.Activity;
@@ -63,9 +64,20 @@ public class MAndFileBrowser extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		int NONE = Menu.NONE;
+		System.out.println("CREATING OPTIONS MENU");
 		menu.add(NONE, MENU_CREATE_DIRECTORY, NONE, R.string.create_directory);
 		menu.add(NONE, MENU_ITEM_EXIT, NONE, R.string.exit);
 		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onMenuOpened(int featureId, Menu menu) {
+		if (!provider.canWrite()) {
+			menu.findItem(MENU_CREATE_DIRECTORY).setEnabled(false);
+		} else {
+			menu.findItem(MENU_CREATE_DIRECTORY).setEnabled(true);
+		}
+		return super.onMenuOpened(featureId, menu);
 	}
 
 	@Override
@@ -91,28 +103,28 @@ public class MAndFileBrowser extends Activity {
 	}
 
 	private void createDirectory() {
-		if (provider.canWrite()) {
-			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-			dialog.setTitle("New Folder");
-			dialog.setMessage("Folder name");
-			final EditText input = new EditText(this);
-			dialog.setView(input);
-			dialog.setPositiveButton("Ok", new OnClickListener() {
-
-				public void onClick(DialogInterface dialog, int which) {
+		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+		dialog.setTitle("New Folder");
+		dialog.setMessage("Folder name");
+		final EditText input = new EditText(this);
+		dialog.setView(input);
+		dialog.setPositiveButton("Ok", new OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				try {
 					provider.createDirectory(input.getText().toString());
-					provider.refresh();
+				} catch (IOException e) {
+					Toast toast = Toast.makeText(MAndFileBrowser.this, e.getMessage(),
+							Toast.LENGTH_SHORT);
+					toast.show();
 				}
-			});
-			dialog.setNegativeButton("Cancel", new OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-				}
-			});
-			dialog.show();
-		} else {
-			Toast toast = Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT);
-			toast.show();
-		}
+				provider.refresh();
+			}
+		});
+		dialog.setNegativeButton("Cancel", new OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+			}
+		});
+		dialog.show();
 
 	}
 

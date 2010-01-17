@@ -21,7 +21,7 @@ import android.widget.TextView;
  * 
  */
 public class FileDataProvider {
-
+	
 	private Activity context;
 	private File currentDirectory;
 	private Comparator<File> comparator;

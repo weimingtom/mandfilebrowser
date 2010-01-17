@@ -39,7 +39,7 @@ public class FileListAdapter extends
 		}
 		for (String extension : resources.getStringArray(R.array.image)) {
 			mimeTypes.put(extension, R.drawable.iconimage);
-			mimeTypes.put(extension + ".selected", R.drawable.iconimage);
+			mimeTypes.put(extension + ".selected", R.drawable.iconselectedimage);
 		}
 	}
 

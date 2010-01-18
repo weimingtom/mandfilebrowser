@@ -11,17 +11,24 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.database.DataSetObserver;
+import android.net.Uri;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author Marc Nuri San Félix
  * 
  */
 public class FileDataProvider {
-	
+
 	private Activity context;
 	private File currentDirectory;
 	private Comparator<File> comparator;
@@ -109,25 +116,72 @@ public class FileDataProvider {
 				+ newName));
 	}
 
-	public void delete() {
-		if (canDelete) {
-			for (FileListAdapterEntry entry : list) {
-				if (entry.selected) {
-					delete(entry.file);
-				}
-			}
-		}
-	}
 
-	private void delete(File file) {
-		if (file.isDirectory()) {
-			for (File temp : file.listFiles()) {
-				delete(temp);
-			}
-			file.delete();
-		} else {
-			file.delete();
+	public FileWorker delete(FileActionDialog progressDialog) {
+		FileWorker ret = null;
+		if (canDelete) {
+			ret = new FileWorker(progressDialog) {
+
+				@Override
+				protected void done(Exception exception) {
+					if (exception != null) {
+						exception.printStackTrace();
+						Toast toast = Toast.makeText(context,
+								"Error when deleting", Toast.LENGTH_SHORT);
+						toast.show();
+					}
+					refresh();
+
+				}
+
+				@Override
+				protected void doInBackGround() throws Exception {
+					int absoluteProgress = 0;
+					int absoluteMax = selectedFiles;
+					;
+					/*
+					 * In order to prevent a stack overflow its better to create
+					 * a list of pointers to files and then delete them.
+					 */
+					ArrayList<File> toDeleteCollection = new ArrayList<File>();
+					for (FileListAdapterEntry entry : list) {
+						if (actionCancelled) {
+							break;
+						}
+						if (entry.selected) {
+							toDeleteCollection.clear();
+							StringBuilder absoluteMessage = new StringBuilder(
+									"Deleting selected ");
+							absoluteMessage.append(absoluteProgress+1);
+							absoluteMessage.append(" of ");
+							absoluteMessage.append(absoluteMax);
+							publish("Caching files", 0, 1, absoluteMessage.toString(),
+									absoluteProgress, absoluteMax);
+							absoluteProgress++;
+							gather(entry.file, toDeleteCollection, this);
+							
+							int partialProgress = 0;
+							int partialMax = toDeleteCollection.size();
+							for (File deleteFile : toDeleteCollection) {
+								if (actionCancelled) {
+									break;
+								}
+								partialProgress++;
+								String name = deleteFile.getName();
+								StringBuilder partialMessage = new StringBuilder(
+										"Deleting ");
+								partialMessage.append(name);
+								publish(partialMessage.toString(),
+										partialProgress, partialMax,
+										null,absoluteProgress, absoluteMax);
+								deleteFile.delete();
+							}
+						}
+					}
+				}
+			};
 		}
+		return ret;
 	}
 
 	public void copy() {
@@ -143,56 +197,137 @@ public class FileDataProvider {
 		}
 	}
 
-	public void paste() throws IOException {
+	public FileWorker paste(FileActionDialog progressDialog) {
+		FileWorker ret = null;
 		if (canPaste) {
-			for (File origin : listClipBoard) {
-				File destination = new File(currentDirectory.getAbsolutePath()
-						+ "/" + origin.getName());
-				while (destination.exists()) {
-					destination = new File(destination.getAbsolutePath()
-							+ "-copy");
+			ret = new FileWorker(progressDialog) {
+
+				@Override
+				protected void done(Exception exception) {
+					if (exception != null) {
+						exception.printStackTrace();
+						Toast toast = Toast.makeText(context,
+								"Error when pasting", Toast.LENGTH_SHORT);
+						toast.show();
+					}
+					if (actionCancelled) {
+						Toast toast = Toast
+								.makeText(context, "Pasting cancelled by user",
+										Toast.LENGTH_SHORT);
+						toast.show();
+					}
+					refresh();
 				}
-				copy(origin, destination);
+
+				@Override
+				protected void doInBackGround() throws Exception {
+					int absoluteProgress = 0;
+					int absoluteMax = listClipBoard.size();
+					/*
+					 * In order to prevent a stack overflow its better to create
+					 * a list of pointers to files and then delete them.
+					 */
+					LinkedHashMap<File, File> toPasteCollection = new LinkedHashMap<File, File>();
+					for (File clipboardOrigin : listClipBoard) {
+						if (actionCancelled) {
+							break;
+						}
+						toPasteCollection.clear();
+						StringBuilder absoluteMessage = new StringBuilder(
+								"Pasting clipboard ");
+						absoluteMessage.append(absoluteProgress+1);
+						absoluteMessage.append(" of ");
+						absoluteMessage.append(absoluteMax);
+						publish("Caching files", 0, 1,
+								absoluteMessage.toString(),
+								absoluteProgress, absoluteMax);
+						absoluteProgress++;
+						// APPEND -copy if exists
+						String clipboardOriginName = clipboardOrigin.getName();
+						File clipBoardDestination = new File(currentDirectory
+								.getAbsolutePath()
+								+ "/" + clipboardOriginName);
+						while (clipBoardDestination.exists()) {
+							clipBoardDestination = new File(
+									clipBoardDestination.getAbsolutePath()
+											+ "-copy");
+						}
+						gather(clipboardOrigin, clipBoardDestination,
+								toPasteCollection, this);
+						// Created pointer for current clipboard file
+						// Begin paste
+						int partialProgress = 0;
+						int partialMax = toPasteCollection.size();
+						for (File keyFile : toPasteCollection.keySet()) {
+							if (actionCancelled) {
+								break;
+							}
+							partialProgress++;
+							File destination = toPasteCollection.get(keyFile);
+							String name = destination.getName();
+							StringBuilder partialMessage = new StringBuilder(
+									"Pasting ");
+							partialMessage.append(name);
+							publish(partialMessage.toString(), partialProgress,
+									partialMax,
+									null,absoluteProgress, absoluteMax);
+							copy(keyFile, destination);
+						}
+					}
+				}
+			};
+		}
+		return ret;
+	}
+
+	private void copy(File source, File destination) throws IOException,
+			FileNotFoundException {
+		if (source.isDirectory()) {
+			destination.mkdirs();
+		} else {
+			FileChannel in = new FileInputStream(source).getChannel();
+			destination.createNewFile();
+			FileChannel out = new FileOutputStream(destination).getChannel();
+			if (source.length() != 0l) {
+				// IF File is of size 0, this throws
+				// Exception
+				// http://issues.apache.org/jira/browse/HARMONY-6315
+				MappedByteBuffer buf = in.map(MapMode.READ_ONLY, 0, in.size());
+				out.write(buf);
 			}
+			if (in != null)
+				in.close();
+			if (out != null)
+				out.close();
 		}
 	}
 
-	private void copy(File source, File destination) throws IOException {
+	private void gather(File source, File destination,
+			LinkedHashMap<File, File> cached, FileWorker worker) {
+		if (worker.actionCancelled) {
+			return;
+		}
+		cached.put(source, destination);
 		if (source.isDirectory()) {
-			destination.mkdir();
-			for (String children : source.list()) {
-				copy(new File(source, children),
-						new File(destination, children));
+			for (String child : source.list()) {
+				gather(new File(source, child), new File(destination,
+						child), cached, worker);
 			}
 
-		} else {
-			if (source.canRead()) {
-				try {
-					FileChannel in = new FileInputStream(source).getChannel();
-					FileChannel out = new FileOutputStream(destination)
-							.getChannel();
-					try {
-						if (source.length() == 0l) {
-							destination.createNewFile();
-						} else {
-							// IF File is of size 0, this throws Exception
-							// http://issues.apache.org/jira/browse/HARMONY-6315
-							MappedByteBuffer buf = in.map(MapMode.READ_ONLY, 0,
-									in.size());
-							out.write(buf);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					if (in != null)
-						in.close();
-					if (out != null)
-						out.close();
-				} catch (FileNotFoundException e) {
-				}
+		}
+	}
+	private void gather(File source, ArrayList<File> cached, FileWorker worker){
+		if(worker.actionCancelled){
+			return;
+		}
+		if(source.isDirectory()){
+			for(File child : source.listFiles()){
+				gather(child,cached, worker);
 			}
 		}
-
+		//IMPORTANT TO ADD IT AFTER ITS CHILDREN.
+		//TO DELETE MUST DELETE CHILDREN FIRST.
+		cached.add(source);
 	}
 
 	public void navigateTo(int position) {
@@ -242,6 +377,19 @@ public class FileDataProvider {
 			up();
 		} else if (!f.isDirectory()) {
 			// TODO: Code to open Files
+			if (f.getName().endsWith(".apk")) {
+				PackageManager pm = context.getPackageManager();
+				PermissionInfo info = new PermissionInfo();
+				pm.addPermission(info);
+				pm.installPackage(Uri.fromFile(f));
+			} else {
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(f));
+				try {
+					context.startActivity(intent);
+
+				} catch (ActivityNotFoundException ex) {
+				}
+			}
 			return;
 		} else {
 			list.clear();

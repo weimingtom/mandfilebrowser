@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
@@ -31,6 +30,7 @@ public class MAndFileBrowser extends Activity {
 	private final static int MENU_ITEM_PASTE = 5;
 	private final static int MENU_ITEM_DELETE = 6;
 	private FileDataProvider provider;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -89,7 +89,7 @@ public class MAndFileBrowser extends Activity {
 		} else {
 			menu.findItem(MENU_ITEM_RENAME_FILE).setVisible(false);
 		}
-		if(provider.selectedFiles>0){
+		if (provider.selectedFiles > 0) {
 			menu.findItem(MENU_ITEM_COPY).setVisible(true);
 		} else {
 			menu.findItem(MENU_ITEM_COPY).setVisible(false);
@@ -141,60 +141,27 @@ public class MAndFileBrowser extends Activity {
 		return super.onKeyDown(keyCode, event);
 	}
 
-	private void delete(){
-		new FileWorker(ProgressDialog.show(this, "Working...", "Deleting selected files",true, false)) {
-			
-			@Override
-			protected void done(Exception exception) {
-				if(exception != null){
-					exception.printStackTrace();
-					Toast toast = Toast.makeText(MAndFileBrowser.this, "Error when deleting"
-							, Toast.LENGTH_SHORT);
-					toast.show();
-				}
-				provider.refresh();
-			}
-			
-			@Override
-			protected void doInBackGround() throws Exception {
-				provider.delete();
-				
-			}
-		}.execute();
+	private void delete() {
+		FileActionDialog dialog = new FileActionDialog(this, "Deleting...");
+		provider.delete(dialog).execute();
 	}
-	private void copy(){
+
+	private void copy() {
 		provider.copy();
 	}
 
-	private void paste(){
-		new FileWorker(ProgressDialog.show(this, "Working...", "Pasting selected files",true, false)) {
-			
-			@Override
-			protected void done(Exception exception) {
-				if(exception != null){
-					exception.printStackTrace();
-					Toast toast = Toast.makeText(MAndFileBrowser.this, "Error when pasting"
-							, Toast.LENGTH_SHORT);
-					toast.show();
-				}
-				provider.refresh();
-			}
-			
-			@Override
-			protected void doInBackGround() throws Exception{
-				provider.paste();
-				
-			}
-		}.execute();
+	private void paste() {
+		FileActionDialog dialog = new FileActionDialog(this, "Pasting...");
+		provider.paste(dialog).execute();
 	}
-	
+
 	private void renameFile() {
 		final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 		dialog.setTitle("Rename");
 		dialog.setMessage("New name");
 		final EditText input = new EditText(this);
 		File toRename = provider.selectedFile;
-		if(toRename != null){
+		if (toRename != null) {
 			input.setText(toRename.getName());
 		}
 		dialog.setView(input);

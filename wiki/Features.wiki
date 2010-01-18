@@ -11,7 +11,7 @@
     * Threaded actions with progress indicator
   * Back button navigates up
 
-=Future features=
+=Planned features=
   * Cut
   * Navigation with gestures + trackball
   * Open files

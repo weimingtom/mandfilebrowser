@@ -3,18 +3,18 @@
 
 = Features=
 
-* Directory navigation
-* Folder and file rename
-* Multiple selection
-  * Copy & Paste
-  * Delete (Files & non-empty directories)
-  * Threaded actions with progress indicator
-* Back button navigates up
+  * Directory navigation
+  * Folder and file rename
+  * Multiple selection
+    * Copy & Paste
+    * Delete (Files & non-empty directories)
+    * Threaded actions with progress indicator
+  * Back button navigates up
 
 =Future features=
-* Cut
-* Navigation with gestures + trackball
-* Open files
-* Edit files
-* Location manager
-* Send files
+  * Cut
+  * Navigation with gestures + trackball
+  * Open files
+  * Edit files
+  * Location manager
+  * Send files

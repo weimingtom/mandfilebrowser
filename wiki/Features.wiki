@@ -1,7 +1,7 @@
 #summary Program Features
 #labels Featured
 
-= Features=
+=Features=
 
   * Directory navigation
   * Folder and file rename

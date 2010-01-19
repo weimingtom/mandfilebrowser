@@ -3,14 +3,20 @@
     
     <string name="app_name">MAndFileBrowser</string>
 
-<string name="app_version">0.01</string><string name="exit">Exit</string>
-<string name="menu">Menu</string>
+
+<string name="menu">Menu</string><string name="about">About</string><string name="exit">Exit</string>
 
 
-<string name="create_directory">New Folder</string>
+<string name="cancel">Cancel</string><string name="copy">Copy</string><string name="paste">Paste</string><string name="delete">Delete</string><string name="create_directory">New Folder</string>
 <string name="rename_file">Rename</string>
-<string name="copy">Copy</string>
-<string name="paste">Paste</string>
-<string name="delete">Delete</string>
-<string name="cancel">Cancel</string>
+
+
+
+
+
+<string name="aboutContent"><b>MAndFileBrowser</b> is a simple Android file manager.
+\n\nAuthor: <b>Marc Nuri</b>
+\n\nWith this program you can copy, move or delete a selection of files and/or directories.
+\nThe application is in an early stage, please post your experience at http://groups.google.com/group/mandfilebrowser-users.
+\n\nhttp://code.google.com/p/mandfilebrowser</string>
 </resources>

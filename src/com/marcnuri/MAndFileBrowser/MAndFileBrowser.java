@@ -29,6 +29,7 @@ public class MAndFileBrowser extends Activity {
 	private final static int MENU_ITEM_COPY = 4;
 	private final static int MENU_ITEM_PASTE = 5;
 	private final static int MENU_ITEM_DELETE = 6;
+	private final static int MENU_ITEM_ABOUT = 7;
 	private FileDataProvider provider;
 
 	/** Called when the activity is first created. */
@@ -73,6 +74,7 @@ public class MAndFileBrowser extends Activity {
 		menu.add(NONE, MENU_ITEM_COPY, NONE, R.string.copy);
 		menu.add(NONE, MENU_ITEM_PASTE, NONE, R.string.paste);
 		menu.add(NONE, MENU_ITEM_DELETE, NONE, R.string.delete);
+		menu.add(NONE, MENU_ITEM_ABOUT, NONE, R.string.about);
 		menu.add(NONE, MENU_ITEM_EXIT, NONE, R.string.exit);
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -112,6 +114,9 @@ public class MAndFileBrowser extends Activity {
 		switch (item.getItemId()) {
 		case MENU_ITEM_EXIT:
 			quit();
+			return true;
+		case MENU_ITEM_ABOUT:
+			about();
 			return true;
 		case MENU_ITEM_CREATE_DIRECTORY:
 			createDirectory();
@@ -211,6 +216,9 @@ public class MAndFileBrowser extends Activity {
 
 	}
 
+	private void about(){
+		new AboutDialog(this).show();
+	}
 	private void quit() {
 		finish();
 	}

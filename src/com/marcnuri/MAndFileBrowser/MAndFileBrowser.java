@@ -24,12 +24,14 @@ import android.widget.AdapterView.OnItemLongClickListener;
  */
 public class MAndFileBrowser extends Activity {
 	private final static int MENU_ITEM_EXIT = 1;
-	private final static int MENU_ITEM_CREATE_DIRECTORY = 2;
-	private final static int MENU_ITEM_RENAME_FILE = 3;
-	private final static int MENU_ITEM_COPY = 4;
-	private final static int MENU_ITEM_PASTE = 5;
-	private final static int MENU_ITEM_DELETE = 6;
-	private final static int MENU_ITEM_ABOUT = 7;
+	private final static int MENU_ITEM_SELECT_ALL = 2;
+	private final static int MENU_ITEM_SELECT_NONE = 3;
+	private final static int MENU_ITEM_CREATE_DIRECTORY = 4;
+	private final static int MENU_ITEM_RENAME_FILE = 5;
+	private final static int MENU_ITEM_COPY = 6;
+	private final static int MENU_ITEM_PASTE = 7;
+	private final static int MENU_ITEM_DELETE = 8;
+	private final static int MENU_ITEM_ABOUT = 9;
 	private FileDataProvider provider;
 
 	/** Called when the activity is first created. */
@@ -68,6 +70,8 @@ public class MAndFileBrowser extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		int NONE = Menu.NONE;
+		menu.add(NONE, MENU_ITEM_SELECT_ALL, NONE, R.string.select_all);
+		menu.add(NONE, MENU_ITEM_SELECT_NONE, NONE, R.string.select_none);
 		menu.add(NONE, MENU_ITEM_CREATE_DIRECTORY, NONE,
 				R.string.create_directory);
 		menu.add(NONE, MENU_ITEM_RENAME_FILE, NONE, R.string.rename_file);
@@ -93,8 +97,10 @@ public class MAndFileBrowser extends Activity {
 		}
 		if (provider.selectedFiles > 0) {
 			menu.findItem(MENU_ITEM_COPY).setVisible(true);
+			menu.findItem(MENU_ITEM_SELECT_NONE).setVisible(true);
 		} else {
 			menu.findItem(MENU_ITEM_COPY).setVisible(false);
+			menu.findItem(MENU_ITEM_SELECT_NONE).setVisible(false);
 		}
 		if (provider.canPaste) {
 			menu.findItem(MENU_ITEM_PASTE).setVisible(true);
@@ -133,6 +139,12 @@ public class MAndFileBrowser extends Activity {
 		case MENU_ITEM_DELETE:
 			delete();
 			return true;
+		case MENU_ITEM_SELECT_ALL:
+			selectAll();
+			return true;
+		case MENU_ITEM_SELECT_NONE:
+			selectNone();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -146,19 +158,6 @@ public class MAndFileBrowser extends Activity {
 		return super.onKeyDown(keyCode, event);
 	}
 
-	private void delete() {
-		FileActionDialog dialog = new FileActionDialog(this, "Deleting...");
-		provider.delete(dialog).execute();
-	}
-
-	private void copy() {
-		provider.copy();
-	}
-
-	private void paste() {
-		FileActionDialog dialog = new FileActionDialog(this, "Pasting...");
-		provider.paste(dialog).execute();
-	}
 
 	private void renameFile() {
 		final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -215,9 +214,28 @@ public class MAndFileBrowser extends Activity {
 		dialog.show();
 
 	}
+	private void selectAll(){
+		provider.selectAll();
+	}
+	private void selectNone(){
+		provider.selectNone();
+	}
 
+	private void delete() {
+		FileActionDialog dialog = new FileActionDialog(this, "Deleting...");
+		provider.delete(dialog).execute();
+	}
+
+	private void copy() {
+		provider.copy();
+	}
+
+	private void paste() {
+		FileActionDialog dialog = new FileActionDialog(this, "Pasting...");
+		provider.paste(dialog).execute();
+	}
 	private void about(){
-		new AboutDialog(this).show();
+		new InfoDialog(this, R.string.about, R.string.aboutContent).show();
 	}
 	private void quit() {
 		finish();

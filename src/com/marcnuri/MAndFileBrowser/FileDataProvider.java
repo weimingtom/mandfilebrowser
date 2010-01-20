@@ -95,6 +95,21 @@ public class FileDataProvider {
 			listAdapter.notifyDataSetChanged();
 		}
 	}
+	public void selectAll(){
+		setSelect(true);
+	}
+	public void selectNone(){
+		setSelect(false);
+	}
+	private void setSelect(boolean selected){
+		for(FileListAdapterEntry entry : list){
+			if (entry.file != null) {
+				entry.iconResource = null;
+				entry.selected = selected;
+			}
+		}
+		listAdapter.notifyDataSetChanged();
+	}
 
 	public void createDirectory(String directoryName) throws IOException {
 		if (!canWrite) {

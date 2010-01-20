@@ -28,10 +28,11 @@ public class MAndFileBrowser extends Activity {
 	private final static int MENU_ITEM_SELECT_NONE = 3;
 	private final static int MENU_ITEM_CREATE_DIRECTORY = 4;
 	private final static int MENU_ITEM_RENAME_FILE = 5;
-	private final static int MENU_ITEM_COPY = 6;
-	private final static int MENU_ITEM_PASTE = 7;
-	private final static int MENU_ITEM_DELETE = 8;
-	private final static int MENU_ITEM_ABOUT = 9;
+	private final static int MENU_ITEM_CUT = 6;
+	private final static int MENU_ITEM_COPY = 7;
+	private final static int MENU_ITEM_PASTE = 8;
+	private final static int MENU_ITEM_DELETE = 9;
+	private final static int MENU_ITEM_ABOUT = 10;
 	private FileDataProvider provider;
 
 	/** Called when the activity is first created. */
@@ -72,12 +73,13 @@ public class MAndFileBrowser extends Activity {
 		int NONE = Menu.NONE;
 		menu.add(NONE, MENU_ITEM_SELECT_ALL, NONE, R.string.select_all);
 		menu.add(NONE, MENU_ITEM_SELECT_NONE, NONE, R.string.select_none);
-		menu.add(NONE, MENU_ITEM_CREATE_DIRECTORY, NONE,
-				R.string.create_directory);
 		menu.add(NONE, MENU_ITEM_RENAME_FILE, NONE, R.string.rename_file);
+		menu.add(NONE, MENU_ITEM_CUT, NONE, R.string.cut);
 		menu.add(NONE, MENU_ITEM_COPY, NONE, R.string.copy);
 		menu.add(NONE, MENU_ITEM_PASTE, NONE, R.string.paste);
 		menu.add(NONE, MENU_ITEM_DELETE, NONE, R.string.delete);
+		menu.add(NONE, MENU_ITEM_CREATE_DIRECTORY, NONE,
+				R.string.create_directory);
 		menu.add(NONE, MENU_ITEM_ABOUT, NONE, R.string.about);
 		menu.add(NONE, MENU_ITEM_EXIT, NONE, R.string.exit);
 		return super.onCreateOptionsMenu(menu);
@@ -96,9 +98,11 @@ public class MAndFileBrowser extends Activity {
 			menu.findItem(MENU_ITEM_RENAME_FILE).setVisible(false);
 		}
 		if (provider.selectedFiles > 0) {
+			menu.findItem(MENU_ITEM_CUT).setVisible(true);
 			menu.findItem(MENU_ITEM_COPY).setVisible(true);
 			menu.findItem(MENU_ITEM_SELECT_NONE).setVisible(true);
 		} else {
+			menu.findItem(MENU_ITEM_CUT).setVisible(false);
 			menu.findItem(MENU_ITEM_COPY).setVisible(false);
 			menu.findItem(MENU_ITEM_SELECT_NONE).setVisible(false);
 		}
@@ -129,6 +133,9 @@ public class MAndFileBrowser extends Activity {
 			return true;
 		case MENU_ITEM_RENAME_FILE:
 			renameFile();
+			return true;
+		case MENU_ITEM_CUT:
+			cut();
 			return true;
 		case MENU_ITEM_COPY:
 			copy();
@@ -224,6 +231,10 @@ public class MAndFileBrowser extends Activity {
 	private void delete() {
 		FileActionDialog dialog = new FileActionDialog(this, "Deleting...");
 		provider.delete(dialog).execute();
+	}
+
+	private void cut() {
+		provider.cut();
 	}
 
 	private void copy() {

@@ -1,25 +1,17 @@
 package com.marcnuri.MAndFileBrowser;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.PermissionInfo;
 import android.database.DataSetObserver;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +26,7 @@ public class FileDataProvider {
 	private Comparator<File> comparator;
 	private ArrayList<FileListAdapterEntry> list;
 	private FileListAdapter listAdapter;
+	private Boolean cut;
 	private ArrayList<File> listClipBoard;
 	public boolean canRename;
 	public boolean canWrite;
@@ -58,6 +51,7 @@ public class FileDataProvider {
 		comparator = new FileComparator();
 		list = new ArrayList<FileListAdapterEntry>();
 		listAdapter = new FileListAdapter(context, R.layout.row, list);
+		cut = null;
 		listClipBoard = new ArrayList<File>();
 
 		listAdapter.registerDataSetObserver(new DataSetObserver() {
@@ -95,14 +89,17 @@ public class FileDataProvider {
 			listAdapter.notifyDataSetChanged();
 		}
 	}
-	public void selectAll(){
+
+	public void selectAll() {
 		setSelect(true);
 	}
-	public void selectNone(){
+
+	public void selectNone() {
 		setSelect(false);
 	}
-	private void setSelect(boolean selected){
-		for(FileListAdapterEntry entry : list){
+
+	private void setSelect(boolean selected) {
+		for (FileListAdapterEntry entry : list) {
 			if (entry.file != null) {
 				entry.iconResource = null;
 				entry.selected = selected;
@@ -130,7 +127,6 @@ public class FileDataProvider {
 		selectedFile.renameTo(new File(currentDirectory.getAbsolutePath() + "/"
 				+ newName));
 	}
-
 
 	public FileWorker delete(FileActionDialog progressDialog) {
 		FileWorker ret = null;
@@ -167,14 +163,14 @@ public class FileDataProvider {
 							toDeleteCollection.clear();
 							StringBuilder absoluteMessage = new StringBuilder(
 									"Deleting selected ");
-							absoluteMessage.append(absoluteProgress+1);
+							absoluteMessage.append(absoluteProgress + 1);
 							absoluteMessage.append(" of ");
 							absoluteMessage.append(absoluteMax);
-							publish("Caching files", 0, 1, absoluteMessage.toString(),
-									absoluteProgress, absoluteMax);
+							publish("Caching files", 0, 1, absoluteMessage
+									.toString(), absoluteProgress, absoluteMax);
 							absoluteProgress++;
 							gather(entry.file, toDeleteCollection, this);
-							
+
 							int partialProgress = 0;
 							int partialMax = toDeleteCollection.size();
 							for (File deleteFile : toDeleteCollection) {
@@ -187,8 +183,8 @@ public class FileDataProvider {
 										"Deleting ");
 								partialMessage.append(name);
 								publish(partialMessage.toString(),
-										partialProgress, partialMax,
-										null,absoluteProgress, absoluteMax);
+										partialProgress, partialMax, null,
+										absoluteProgress, absoluteMax);
 								deleteFile.delete();
 							}
 						}
@@ -198,11 +194,31 @@ public class FileDataProvider {
 		}
 		return ret;
 	}
-
-	public void copy() {
+	private void gather(File source, ArrayList<File> cached, FileWorker worker) {
+		if (worker.actionCancelled) {
+			return;
+		}
+		if (source.isDirectory()) {
+			for (File child : source.listFiles()) {
+				gather(child, cached, worker);
+			}
+		}
+		// IMPORTANT TO ADD IT AFTER ITS CHILDREN.
+		// TO DELETE MUST DELETE CHILDREN FIRST.
+		cached.add(source);
+	}
+	public void cut(){
+		copy(true);
+	}
+	public void copy(){
+		copy(false);
+	}
+	private void copy(boolean isCut) {
+		cut = null;
 		listClipBoard.clear();
 		// Performance, only traverse if necessary.
 		if (selectedFiles > 0) {
+			cut = isCut;
 			for (FileListAdapterEntry entry : list) {
 				if (entry.selected) {
 					listClipBoard.add(entry.file);
@@ -215,8 +231,8 @@ public class FileDataProvider {
 	public FileWorker paste(FileActionDialog progressDialog) {
 		FileWorker ret = null;
 		if (canPaste) {
-			ret = new FileWorker(progressDialog) {
-
+			ret = new FileWorkerPaste(progressDialog,
+					listClipBoard,currentDirectory, cut.booleanValue()) {
 				@Override
 				protected void done(Exception exception) {
 					if (exception != null) {
@@ -231,119 +247,24 @@ public class FileDataProvider {
 										Toast.LENGTH_SHORT);
 						toast.show();
 					}
-					refresh();
-				}
-
-				@Override
-				protected void doInBackGround() throws Exception {
-					int absoluteProgress = 0;
-					int absoluteMax = listClipBoard.size();
-					/*
-					 * In order to prevent a stack overflow its better to create
-					 * a list of pointers to files and then delete them.
-					 */
-					LinkedHashMap<File, File> toPasteCollection = new LinkedHashMap<File, File>();
-					for (File clipboardOrigin : listClipBoard) {
-						if (actionCancelled) {
-							break;
-						}
-						toPasteCollection.clear();
-						StringBuilder absoluteMessage = new StringBuilder(
-								"Pasting clipboard ");
-						absoluteMessage.append(absoluteProgress+1);
-						absoluteMessage.append(" of ");
-						absoluteMessage.append(absoluteMax);
-						publish("Caching files", 0, 1,
-								absoluteMessage.toString(),
-								absoluteProgress, absoluteMax);
-						absoluteProgress++;
-						// APPEND -copy if exists
-						String clipboardOriginName = clipboardOrigin.getName();
-						File clipBoardDestination = new File(currentDirectory
-								.getAbsolutePath()
-								+ "/" + clipboardOriginName);
-						while (clipBoardDestination.exists()) {
-							clipBoardDestination = new File(
-									clipBoardDestination.getAbsolutePath()
-											+ "-copy");
-						}
-						gather(clipboardOrigin, clipBoardDestination,
-								toPasteCollection, this);
-						// Created pointer for current clipboard file
-						// Begin paste
-						int partialProgress = 0;
-						int partialMax = toPasteCollection.size();
-						for (File keyFile : toPasteCollection.keySet()) {
-							if (actionCancelled) {
-								break;
-							}
-							partialProgress++;
-							File destination = toPasteCollection.get(keyFile);
-							String name = destination.getName();
-							StringBuilder partialMessage = new StringBuilder(
-									"Pasting ");
-							partialMessage.append(name);
-							publish(partialMessage.toString(), partialProgress,
-									partialMax,
-									null,absoluteProgress, absoluteMax);
-							copy(keyFile, destination);
-						}
+					if(cutError){
+						Toast toast = Toast
+						.makeText(context, "Not every cut file could be deleted",
+								Toast.LENGTH_SHORT);
+				toast.show();
 					}
+					refresh();
 				}
 			};
 		}
 		return ret;
 	}
 
-	private void copy(File source, File destination) throws IOException,
-			FileNotFoundException {
-		if (source.isDirectory()) {
-			destination.mkdirs();
-		} else {
-			FileChannel in = new FileInputStream(source).getChannel();
-			destination.createNewFile();
-			FileChannel out = new FileOutputStream(destination).getChannel();
-			if (source.length() != 0l) {
-				// IF File is of size 0, this throws
-				// Exception
-				// http://issues.apache.org/jira/browse/HARMONY-6315
-				MappedByteBuffer buf = in.map(MapMode.READ_ONLY, 0, in.size());
-				out.write(buf);
-			}
-			if (in != null)
-				in.close();
-			if (out != null)
-				out.close();
-		}
-	}
 
-	private void gather(File source, File destination,
-			LinkedHashMap<File, File> cached, FileWorker worker) {
-		if (worker.actionCancelled) {
-			return;
-		}
-		cached.put(source, destination);
-		if (source.isDirectory()) {
-			for (String child : source.list()) {
-				gather(new File(source, child), new File(destination,
-						child), cached, worker);
-			}
 
-		}
-	}
-	private void gather(File source, ArrayList<File> cached, FileWorker worker){
-		if(worker.actionCancelled){
-			return;
-		}
-		if(source.isDirectory()){
-			for(File child : source.listFiles()){
-				gather(child,cached, worker);
-			}
-		}
-		//IMPORTANT TO ADD IT AFTER ITS CHILDREN.
-		//TO DELETE MUST DELETE CHILDREN FIRST.
-		cached.add(source);
-	}
+
+
+
 
 	public void navigateTo(int position) {
 		navigateTo(listAdapter.getItem(position).file);
@@ -392,18 +313,18 @@ public class FileDataProvider {
 			up();
 		} else if (!f.isDirectory()) {
 			// TODO: Code to open Files
-			if (f.getName().endsWith(".apk")) {
-				PackageManager pm = context.getPackageManager();
-				PermissionInfo info = new PermissionInfo();
-				pm.addPermission(info);
-				pm.installPackage(Uri.fromFile(f));
-			} else {
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(f));
-				try {
-					context.startActivity(intent);
+			try {
 
-				} catch (ActivityNotFoundException ex) {
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(f));
+				String type = MimeTypeMap.getSingleton()
+						.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(f
+								.getCanonicalPath()));
+				if(type!=null){
+					intent.setType(type);
 				}
+				context.startActivity(intent);
+			} catch (IOException ex) {
+			} catch (ActivityNotFoundException ex) {
 			}
 			return;
 		} else {

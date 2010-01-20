@@ -4,17 +4,16 @@
 =Features=
 
   * Directory navigation
+  * Open Files
   * Folder and file rename
   * Multiple selection
-    * Copy & Paste
+    * Cut, Copy & Paste
     * Delete (Files & non-empty directories)
     * Threaded actions with progress indicator
   * Back button navigates up
 
 =Planned features=
-  * Cut
   * Navigation with gestures + trackball
-  * Open files
   * Edit files
   * Location manager
   * Send files

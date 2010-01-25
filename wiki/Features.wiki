@@ -13,6 +13,8 @@
   * Back button navigates up
 
 =Planned features=
+  * File properties
+  * Sorting
   * Navigation with gestures + trackball
   * Edit files
   * Location manager

@@ -11,9 +11,11 @@
     * Delete (Files & non-empty directories)
     * Threaded actions with progress indicator
   * Back button navigates up
+  * One line expanding file information
 
 =Planned features=
   * File properties
+  * Available properties
   * Sorting
   * Navigation with gestures + trackball
   * Edit files
